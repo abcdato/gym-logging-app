@@ -2,9 +2,9 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { SQLiteProvider } from 'expo-sqlite';
 import { Suspense } from 'react';
-import { useColorScheme } from 'react-native';
 
 import { DATABASE_NAME, migrateDbIfNeeded } from '@/db/schema';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 SplashScreen.preventAutoHideAsync();
 

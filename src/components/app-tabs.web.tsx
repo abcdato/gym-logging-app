@@ -6,9 +6,10 @@ import {
   type TabTriggerSlotProps,
   type TabListProps,
 } from 'expo-router/ui';
-import { Pressable, useColorScheme, View, StyleSheet, type PressableProps } from 'react-native';
+import { Pressable, View, StyleSheet, type PressableProps } from 'react-native';
 
 import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
