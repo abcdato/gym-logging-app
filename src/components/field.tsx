@@ -63,7 +63,6 @@ export function Field({
 const styles = StyleSheet.create({
   container: {
     gap: Spacing.one,
-    flex: 1,
   },
   inputRow: {
     flexDirection: 'row',
