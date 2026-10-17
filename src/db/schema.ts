@@ -1,7 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 export const DATABASE_NAME = 'gymkeeper.db';
-const DATABASE_VERSION = 1;
+const DATABASE_VERSION = 2;
 
 const TABLES = `
 PRAGMA journal_mode = 'wal';
@@ -177,6 +177,11 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
 
     await db.runAsync("INSERT OR IGNORE INTO app_settings (id) VALUES (1)");
     currentVersion = 1;
+  }
+
+  if (currentVersion === 1) {
+    await db.execAsync('ALTER TABLE day ADD COLUMN started_at INTEGER');
+    currentVersion = 2;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);

@@ -54,6 +54,7 @@ interface DayRow {
   date: string;
   comment: string | null;
   duration_min: number | null;
+  started_at: number | null;
 }
 
 interface ExerciseRow {
@@ -88,6 +89,7 @@ const mapDay = (r: DayRow): Day => ({
   date: r.date,
   comment: r.comment,
   durationMin: r.duration_min,
+  startedAt: r.started_at,
 });
 
 const mapExercise = (r: ExerciseRow): Exercise => ({
@@ -195,6 +197,24 @@ export async function updateDay(
     patch.durationMin ?? null,
     dayId
   );
+}
+
+/** Starts or clears the workout timer for a day (epoch milliseconds, or null to stop). */
+export async function setDayStartedAt(
+  db: SQLiteDatabase,
+  dayId: number,
+  startedAt: number | null
+): Promise<void> {
+  await db.runAsync('UPDATE day SET started_at = ? WHERE id = ?', startedAt, dayId);
+}
+
+/** Records the finished workout duration in minutes (null clears it). */
+export async function setDayDurationMin(
+  db: SQLiteDatabase,
+  dayId: number,
+  durationMin: number | null
+): Promise<void> {
+  await db.runAsync('UPDATE day SET duration_min = ? WHERE id = ?', durationMin, dayId);
 }
 
 export async function getDayWithExercises(

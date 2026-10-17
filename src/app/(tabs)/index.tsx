@@ -12,6 +12,7 @@ import { SetEditor } from '@/components/set-editor';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useTimers } from '@/context/timers';
 import {
   addSet,
   deleteSet,
@@ -24,6 +25,7 @@ import {
 } from '@/db/repository';
 import type { DayWithExercises, Exercise, SetDraft, SetEntry } from '@/db/types';
 import { useTheme } from '@/hooks/use-theme';
+import { formatClock } from '@/utils/time';
 
 const DIFFICULTY_LABELS = ['Easy', 'Moderate', 'Hard', 'Very hard', 'Max'];
 
@@ -32,6 +34,8 @@ export default function TodayScreen() {
   const theme = useTheme();
   const router = useRouter();
   const epochDay = useMemo(() => todayEpochDay(), []);
+  const { startRest, restActive, workoutActive, workoutElapsed, startWorkout, finishWorkout } =
+    useTimers();
 
   const [day, setDay] = useState<DayWithExercises | null>(null);
   const [weightUnit, setWeightUnit] = useState<'kg' | 'lb'>('kg');
@@ -71,6 +75,7 @@ export default function TodayScreen() {
       distance: previous?.distance ?? null,
     });
     await load();
+    startRest();
   };
 
   const handleSaveSet = async (draft: SetDraft) => {
@@ -79,6 +84,7 @@ export default function TodayScreen() {
     }
     setEditor(null);
     await load();
+    startRest();
   };
 
   const handleDeleteSet = async () => {
@@ -113,10 +119,43 @@ export default function TodayScreen() {
             <Button title="Add exercise" compact onPress={() => setPickerOpen(true)} />
           }
         />
+
+        <View
+          style={[
+            styles.workoutBar,
+            { backgroundColor: theme.backgroundElement, borderColor: theme.border },
+          ]}>
+          <View style={styles.workoutInfo}>
+            <ThemedText type="smallBold">
+              {workoutActive
+                ? formatClock(workoutElapsed)
+                : day?.durationMin != null
+                  ? `${day.durationMin} min recorded`
+                  : 'Workout not started'}
+            </ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {workoutActive ? 'Session in progress' : 'Track your session duration'}
+            </ThemedText>
+          </View>
+          <Button
+            title={workoutActive ? 'Finish' : 'Start'}
+            variant={workoutActive ? 'success' : 'primary'}
+            compact
+            onPress={async () => {
+              if (workoutActive) {
+                await finishWorkout();
+              } else {
+                await startWorkout();
+              }
+              await load();
+            }}
+          />
+        </View>
+
         <FlatList
           data={exercises}
           keyExtractor={(item) => `${item.exercise.id}`}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, restActive && styles.listWithRest]}
           ListEmptyComponent={
             <ThemedView type="backgroundElement" style={styles.emptyCard}>
               <ThemedText type="smallBold">Start your workout</ThemedText>
@@ -214,6 +253,23 @@ const styles = StyleSheet.create({
   list: {
     gap: Spacing.three,
     paddingBottom: BottomTabInset + Spacing.four,
+  },
+  listWithRest: {
+    paddingBottom: BottomTabInset + Spacing.six,
+  },
+  workoutBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.three,
+    padding: Spacing.three,
+    marginBottom: Spacing.three,
+    borderRadius: Spacing.three,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  workoutInfo: {
+    flex: 1,
+    gap: Spacing.half,
   },
   emptyCard: {
     padding: Spacing.four,

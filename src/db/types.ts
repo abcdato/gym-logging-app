@@ -33,6 +33,8 @@ export interface Day {
   date: string;
   comment: string | null;
   durationMin: number | null;
+  /** Epoch milliseconds when the workout timer was started, or null when not running. */
+  startedAt: number | null;
 }
 
 export interface SetEntry {
